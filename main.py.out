@@ -1,0 +1,36 @@
+\begin{console}[frame=single, , commandchars=~!@]
+#include <iostream>
+#include <typeinfo>
+
+int main()
+{
+    int x = 42;
+    std::cout << (typeid(x) == typeid(int)) << '\n';
+    std::cout << (typeid(42) == typeid(int)) << '\n';
+    std::cout << typeid(int).name() << '\n';
+    std::cout << typeid(unsigned int).name() << '\n';
+    std::cout << typeid(char).name() << '\n';
+    std::cout << typeid(bool).name() << '\n';
+    std::cout << typeid(int *).name() << '\n';
+    std::cout << typeid(int []).name() << '\n';
+    std::cout << typeid(int &).name() << '\n';
+    std::cout << (typeid(int &) == typeid(int)) << '\n';
+
+    return 0;
+}
+\end{console}
+
+\begin{console}[frame=single, , commandchars=~!$]
+[student@localhost typeinfo] g++ main.cpp; ./a.out
+1
+1
+i
+j
+c
+b
+Pi
+A_i
+i
+1
+\end{console}
+

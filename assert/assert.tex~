@@ -1,0 +1,295 @@
+\section{assert}
+
+Try this:
+\begin{python}
+from latextool_basic import *
+s = r'''
+#include <iostream>
+#include <cassert>
+
+int main()
+{
+    assert(0);
+    std::cout << "hello world" << '\n';
+    return 0;
+}
+'''.strip()
+print console(s)
+os.system('mkdir assert/tmp')
+file('assert/tmp/main.cpp', 'w').write(s)
+print 'Compile and run the program:'
+print shell('g++ *.cpp; ./a.out', dir='assert/tmp')
+\end{python}
+Note that an assertion message is printed, telling you that the program
+was aborted.
+Note that the print statement in the program was not executed.
+
+Calling \verb!assert()! with \verb!0! will cause
+your program to abort.
+\verb!assert()! is frequently used 
+to check for conditions
+when developing a program.
+For instance suppose an input to a function \verb!f()! should be 
+an integer greater than 0.
+You can do this:
+\begin{python}
+from latextool_basic import *
+s = r'''
+void f(int x)
+{
+    assert(x > 0);
+    // ... do something with x ...
+}
+'''.strip()
+print console(s)
+\end{python}
+Or suppose the function \verb!f()! is suppose to modify \verb!x!,
+which is passed by reference, so that on return, \verb!x! must be 
+less than 10.
+You can do this:
+\begin{python}
+from latextool_basic import *
+s = r'''
+void f(int & x)
+{
+    assert(x > 0);
+    // ... do something to x ...
+    assert(x < 10);   
+}
+'''.strip()
+print console(s)
+\end{python}
+The conditions guarding the entrance into the main code of \verb!f()!
+and the exit from \verb!f()!
+are frequently called precondition(s) and postcondition(s).
+
+Note that the failure of the conditions (pre- or post-)
+should be viewed as a program error.
+In other words, if the system is developed correctly,
+you do expect the pre- and postconditions to be satisfied.
+
+As you can see from the example, you are using C++ type checking to 
+ensure that the paramter \verb!x! is an integer
+\textit{and} you are using the precondition to ensure that 
+\verb!x! is positive.
+In a sense, you can trying to simulate the existence of a
+positive integer type,
+except that it's not exactly a type but a runtime condition.
+Therefore if
+the condition fails, it can only fail during runtime and 
+not during compile time.
+
+But \verb!assert()! is not just for tightening your control
+over types.
+Besides using \verb!assert()! for a condition on a single variable,
+you can also have conditions that involves more than one.
+For instance 
+\begin{python}
+from latextool_basic import *
+s = r'''
+void area_right_angle_triangle(double a, double b, double h)
+{
+    assert(a > 0);
+    assert(b > 0);
+    assert(h > 0);
+    assert(a * a + b * b == h * h);
+    // ... return the area ...
+}
+'''.strip()
+print console(s)
+\end{python}
+The parameters \verb!a!, \verb!b!, and \verb!h! represents the sides of a
+right-angle triangle and therefore must satisfy the Pythagorean condition.
+In this case the last condition involves 3 variables and has nothing to do with
+types.
+By the way, since doubles are not exact, you probably want to do this 
+(or something similar):
+\begin{python}
+from latextool_basic import *
+s = r'''
+void area_right_angle_triangle(double a, double b, double h)
+{
+    assert(a > 0);
+    assert(b > 0);
+    assert(h > 0); 
+    assert(fabs(a * a + b * b - h * h) < 0.00001);
+    // ... return the area ...
+}
+'''.strip()
+print console(s)
+\end{python}
+and you can further combine all the conditions together into one if you wish:
+\begin{python}
+from latextool_basic import *
+s = r'''
+void area_right_angle_triangle(double a, double b, double h)
+{
+    assert(a > 0 && b > 0 && h > 0 
+           && fabs(a * a + b * b - h * h) < 0.00001);
+    // ... return the area ...
+}
+'''.strip()
+print console(s)
+\end{python}
+
+In a \lq\lq serious'' software system (say a critical system), 
+pre- and postconditions
+are fully documented (yes, that's right).
+In that case you should use one assert per condition and label it of do something
+like this:
+\begin{python}
+from latextool_basic import *
+s = r'''
+double area_right_angle_triangle(double a, double b, double h)
+{
+    assert(a > 0                                      // Precondition 23
+           && b > 0                                   // Precondition 24
+           && h > 0                                   // Precondition 25
+           && fabs(a * a + b * b - h * h) < 0.00001); // Precondition 26
+    // ... return the area ...
+}
+'''.strip()
+print console(s)
+\end{python}
+
+
+\subsection{Maintenance and performance benefit}
+
+Now suppose you have checked your software with lots of test cases
+and your program pass all assert tests.
+At that point, you feel that you can speed up your program a little
+and not perform the checks.
+(The execution of \verb!assert()! of course takes time.)
+You know that the assert checks might be usedful in the future.
+You have decided to keep them all the asserts and do this:
+{\small
+\begin{python}
+from latextool_basic import *
+s = r'''
+double area_right_angle_triangle(double a, double b, double h)
+{
+    //assert(a > 0                                      // Precondition 23
+    //       && b > 0                                   // Precondition 24
+    //       && h > 0                                   // Precondition 25
+    //       && fabs(a * a + b * b - h * h) < 0.00001); // Precondition 26
+    // ... return the area ...
+}
+'''.strip()
+print console(s)
+\end{python}
+}
+Right? 
+No! All you need to do is to realize that you can actually turn off
+asserts by defining the \lq\lq no debug'' preprocessor macro, \verb!NDEBUG!.
+Compile and run this:
+\begin{python}
+from latextool_basic import *
+s = r'''
+#include <iostream>
+#define NDEBUG
+#include <cassert>
+
+int main()
+{
+    assert(0);
+    std::cout << "hello world" << '\n';
+    return 0;
+}
+'''.strip()
+print console(s)
+os.system('mkdir assert/tmp')
+file('assert/tmp/main.cpp', 'w').write(s)
+print 'Compile and run the program:'
+print shell('g++ *.cpp; ./a.out', dir='assert/tmp')
+\end{python}
+Notice there is no assertion message.
+Note that the \verb!#define NDEBUG! must appear before \verb!#include <cassert>!.
+Another way to achieve the same thing is to use the \lq\lq no debug'' option
+when you execute g++:
+\begin{python}
+from latextool_basic import *
+s = r'''
+#include <iostream>
+#include <cassert>
+
+int main()
+{
+    assert(0);
+    std::cout << "hello world" << '\n';
+    return 0;
+}
+'''.strip()
+print console(s)
+os.system('mkdir assert/tmp')
+file('assert/tmp/main.cpp', 'w').write(s)
+print 'Compile and run the program:'
+print shell('g++ *.cpp -DNDEBUG; ./a.out', dir='assert/tmp')
+\end{python}
+Notice again that the assertion message is not printed.
+
+
+\subsection{Modifying assert}
+
+When you think of assertion catching condition failure, 
+you would recall exceptions right away.
+In the case of an exception, you have an opportunity to 
+catch it and do something with it, such as 
+printing some error message or you might want to log
+an error message (example: save it to a file).
+In the case of assertions, you cannot catch them.
+For instance say you have this:
+\begin{python}
+from latextool_basic import *
+s = r'''
+void f(int x, int y)
+{
+    assert(x < y);
+    // ... 
+}
+'''.strip()
+print console(s)
+\end{python}
+and the condition fails.
+It would nice to see a print out of the value of \verb!x!
+and the value of \verb!y!.
+You can of course go back to exceptions:
+\begin{python}
+from latextool_basic import *
+s = r'''
+void f(int x, int y)
+{
+    try
+    {
+        if (!(x < y)) throw Exception("%s < %s condition fails")  
+        // ...
+    }
+    except (Exception & e)
+    {
+        std::cout << e << std::endl; // or use std::err
+	assert(0);
+    }
+}
+'''.strip()
+print console(s)
+\end{python}
+Wow! What a pain!
+
+Another way to do this is to write your own \verb!assert()!.
+Here's one possibility:
+\begin{python}
+from latextool_basic import *
+s = r'''
+void myassert(bool b, std::string & s)
+{
+    if (!b) std::cout << s << std::endl; // or use std::err
+    assert(b);
+}
+
+void f(int x, int y)
+{
+    myassert(x < y, ``'');
+    // ... 
+}
+'''.strip()
+print console(s)
+\end{python}

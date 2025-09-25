@@ -1,0 +1,23 @@
+class Test:
+
+    def __init__(self):
+        pass
+
+class Test1(Test):
+
+    def __init__(self):
+        pass
+
+    def setup(self):
+        file('main.cpp', 'w').write(r'''
+#include <iostream>
+#include "vector.h"
+
+int main()
+{
+    double x;
+    std::cin >> x;
+    vector v(x, 3);
+    std::cout << v.get_x() << std::endl;
+}
+''')
